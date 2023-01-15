@@ -20,8 +20,8 @@ class Snack(models.Model):
 
 class Machine(models.Model):
     class MachineStatus(models.TextChoices):
-        NORMAL = "NORM", _("Normal")
-        OUT_OF_STOCK = "OUT", _("Out of Stock")
+        NORMAL = _("Normal")
+        OUT_OF_STOCK = _("Out of Stock")
 
     """Model for Vending machine contain machine individual information"""
 
@@ -31,7 +31,7 @@ class Machine(models.Model):
     )
     # When create this machine shouldn't have any stock
     status: models.CharField = models.CharField(
-        max_length=10,
+        max_length=20,
         choices=MachineStatus.choices,
         default=MachineStatus.OUT_OF_STOCK,
         editable=True,
