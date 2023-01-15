@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add unique constraint to fields in Machine and Snack model
 - add signal to auto set status of Machine
 - create form and serializer
+- create management commands
+    - create_sample: to create simple sample data
+    - easy_setup: auto migrate and create simple sample data
 
 
 ## 2023-01-14
