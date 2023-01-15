@@ -38,12 +38,16 @@ class Command(BaseCommand):
             machine_list: list[Machine] = Machine.objects.bulk_create(
                 [
                     Machine(
-                        location=f"Science Building {i} floor Mahidol University Salaya"
+                        name=f"Science Building machine {i}",
+                        location=f"Science Building {i} floor Mahidol University Salaya",
                     )
                     for i in range(1, 11)
                 ]
                 + [
-                    Machine(location=f"MUIC Building {i} floor Mahidol University Salaya")
+                    Machine(
+                        name=f"MUIC Building machine {i}",
+                        location=f"MUIC Building {i} floor Mahidol University Salaya",
+                    )
                     for i in range(1, 11)
                 ]
             )

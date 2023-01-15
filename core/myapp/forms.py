@@ -21,4 +21,4 @@ class StockForm(forms.ModelForm):
 class MachineForm(forms.ModelForm):
     class Meta:
         model = Machine
-        fields = ["location"]
+        fields = ["name", "location"]

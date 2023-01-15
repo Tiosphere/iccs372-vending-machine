@@ -26,6 +26,7 @@ class Machine(models.Model):
     """Model for Vending machine contain machine individual information"""
 
     id: models.BigAutoField = models.BigAutoField(primary_key=True)
+    name: models.CharField = models.CharField(max_length=255, unique=True, editable=True)
     location: models.TextField = models.TextField(
         max_length=500, editable=True, unique=True
     )
