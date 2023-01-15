@@ -1,4 +1,4 @@
-from random import choices
+from random import choice
 from typing import Any
 
 from django.core.management.base import BaseCommand
@@ -52,6 +52,5 @@ class Command(BaseCommand):
                 ]
             )
             for i in machine_list:
-                for snack in choices(snack_list, k=3):
-                    Stock.objects.create(machine=i, snack=snack, quantity=20)
+                Stock.objects.create(machine=i, snack=choice(snack_list), quantity=20)
             self.stdout.write("  Finish creating sample data.")

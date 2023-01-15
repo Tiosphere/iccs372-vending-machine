@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - disable csrf token check
+- fix create_sample same stock bug
 
 ### Added
 - add unique constraint to fields in Machine and Snack model
@@ -18,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - create management commands
     - create_sample: to create simple sample data
     - easy_setup: auto migrate and create simple sample data
-- add api endpoint for Snack and Machine model
+- add api endpoint for Snack, Machine, and Stock model
 - about section in readme file
 - add name field to Machine model
 

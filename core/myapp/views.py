@@ -138,3 +138,54 @@ def snack_instance(request: HttpRequest, id: int) -> HttpResponse:
         return JsonResponse(data=json_format(snack_serializer(instance)))
 
     return HttpResponseNotAllowed(["GET", "POST"])
+
+
+def stock_view(request: HttpRequest, machine_id: int, snack_id: int) -> HttpResponse:
+    """
+    method GET:
+        return data of current of machine
+        if current machine didn't has this snack.
+        It will be auto add with quantity 0 as default.
+            options:
+                delete: boolean if True remove snack from machine
+                add: positive integer amount of snack will be add
+                minus: positive integer amount of snack will be minus
+
+
+    """
+    # check if machine_id valid
+    machine_instance = Machine.objects.filter(id=machine_id).first()
+    if machine_instance is None:
+        return JsonResponse(
+            data=json_format("Can't find machine with this id", error=True)
+        )
+    # check if snack_id valid
+    snack_instance = Snack.objects.filter(id=snack_id).first()
+    if snack_instance is None:
+        return JsonResponse(data=json_format("Can't find snack with this id", error=True))
+    instance = Stock.objects.get_or_create(
+        machine=machine_instance, snack=snack_instance
+    )[0]
+    if request.method == "GET":
+        if request.GET.get("delete", False):
+            instance.delete()
+            return JsonResponse(
+                data=json_format(
+                    f"remove snack {snack_instance.name} from machine id={machine_instance.id}"
+                )
+            )
+        add: str = request.GET.get("add", "0")
+        minus: str = request.GET.get("minus", "0")
+        start: str = request.GET.get("set", str(instance.quantity))
+        if not (add.isnumeric() and minus.isnumeric() and start.isnumeric()):
+            return JsonResponse(
+                data=json_format("Invalid parameter(s) is found", error=True)
+            )
+        instance.quantity = abs(int(start)) + abs(int(add)) - abs(int(minus))
+        instance.save()
+        return JsonResponse(
+            data=json_format(
+                machine_detail_serializer(Machine.objects.get(id=machine_id))
+            )
+        )
+    return HttpResponseNotAllowed(["GET"])
