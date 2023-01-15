@@ -6,7 +6,7 @@ class Snack(models.Model):
     """Model for all snack name. This model only contain name not stock"""
 
     id: models.BigAutoField = models.BigAutoField(primary_key=True)
-    name: models.CharField = models.CharField(max_length=255, editable=True)
+    name: models.CharField = models.CharField(max_length=255, editable=True, unique=True)
 
     class Meta:
         # Order by name
@@ -14,21 +14,24 @@ class Snack(models.Model):
             "name",
         ]
 
-
-class MachineStatus(models.TextChoices):
-    NORMAL = _("Normal")
-    OUT_OF_STOCK = _("Out of Stock")
+    def __str__(self) -> str:
+        return self.name
 
 
 class Machine(models.Model):
+    class MachineStatus(models.TextChoices):
+        NORMAL = "NORM", _("Normal")
+        OUT_OF_STOCK = "OUT", _("Out of Stock")
 
     """Model for Vending machine contain machine individual information"""
 
     id: models.BigAutoField = models.BigAutoField(primary_key=True)
-    location: models.TextField = models.TextField(max_length=500, editable=True)
+    location: models.TextField = models.TextField(
+        max_length=500, editable=True, unique=True
+    )
     # When create this machine shouldn't have any stock
     status: models.CharField = models.CharField(
-        max_length=20,
+        max_length=10,
         choices=MachineStatus.choices,
         default=MachineStatus.OUT_OF_STOCK,
         editable=True,
@@ -39,6 +42,9 @@ class Machine(models.Model):
         ordering = [
             "id",
         ]
+
+    def __str__(self) -> str:
+        return f"Machine at {self.location}"
 
 
 class Stock(models.Model):
@@ -56,3 +62,4 @@ class Stock(models.Model):
         ordering = [
             "id",
         ]
+        default_related_name = "stock"
