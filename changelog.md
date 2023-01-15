@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - add unique constraint to fields in Machine and Snack model
 - add signal to auto set status of Machine
+- create form and serializer
 
 
 ## 2023-01-14
