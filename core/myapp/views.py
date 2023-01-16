@@ -1,12 +1,6 @@
-from django.http import (
-    HttpRequest,
-    HttpResponse,
-    HttpResponseBadRequest,
-    HttpResponseNotAllowed,
-    JsonResponse,
-)
 from django.db.models.manager import BaseManager
-from myapp.forms import MachineForm, SnackForm, StockForm
+from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed, JsonResponse
+from myapp.forms import MachineForm, SnackForm
 from myapp.models import Machine, Snack, Stock
 from myapp.serializers import (
     json_format,
@@ -35,7 +29,7 @@ def machine_views(request: HttpRequest) -> HttpResponse:
         if form.is_valid():
             return JsonResponse(data=json_format(machine_serializer(form.save(True))))
         else:
-            return JsonResponse(data=json_format(form.errors.get_json_data, error=True))
+            return JsonResponse(data=json_format(form.errors.get_json_data(), error=True))
 
     elif request.method == "GET":
         query: BaseManager[Machine] = Machine.objects.all()
@@ -109,7 +103,7 @@ def snack_views(request: HttpRequest) -> JsonResponse:
         if form.is_valid():
             return JsonResponse(data=json_format(snack_serializer(form.save(True))))
         else:
-            return JsonResponse(data=json_format(form.errors.get_json_data, error=True))
+            return JsonResponse(data=json_format(form.errors.get_json_data(), error=True))
     elif request.method == "GET":
         query: BaseManager[Snack] = Snack.objects.all()
         # filter process
@@ -163,8 +157,9 @@ def stock_view(request: HttpRequest, machine_id: int, snack_id: int) -> HttpResp
                 delete: boolean if True remove snack from machine
                 add: positive integer amount of snack will be add
                 minus: positive integer amount of snack will be minus
+                set: positive integer amount of snack will be set
 
-
+            **If there is multiple options, snack amount will be set first and then add and minus
     """
     # check if machine_id valid
     machine_instance = Machine.objects.filter(id=machine_id).first()

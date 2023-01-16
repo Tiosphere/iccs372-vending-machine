@@ -1,5 +1,3 @@
-FORMAT: 1A
-
 # Documentation
 
 ## About
@@ -15,12 +13,25 @@ FORMAT: 1A
     * CRUD vending machine (name, location, etc.)
     * each vending machine has own stock
 
+## Table of Content
+- [Features](#api)
+- [Setup](#setup)
+- [API](#api)
+  - [machine](#endpoint-localhost8000machine)
+  - [snack](#endpoint-localhost8000snack)
+  - [stock](#endpoint-localhost8000stockmachine_idsnack_id)
+
+
+
+
 # Features
-- Each vending machine has own storage and stock
+- Each vending machine has own storage
 - Search for machine by name and location
 - Easily add, remove, and update machine data
-- Easily change snack name across all machine
+- Easily change snack name across all machines
 - Auto update vending machine status
+  - NORMAL: all snacks are available
+  - OUT OF STOCK: some or all snacks are out
 - Add, Minus, and Set command to easily update machine stock
 
 # Setup
@@ -149,6 +160,30 @@ FORMAT: 1A
     #                 {"snack_id": 5, "snack_name": "7-Up", "quantity": 5},
     #                 {"snack_id": 2, "snack_name": "Mineral Water", "quantity": 5},
     #             ],
+    #         },
+    #     ],
+    #     "error": False,
+    # }
+
+    url = "http://localhost:8000/machine/?name=2"
+
+    response = requests.request("GET", url)
+
+    print(response.json())
+
+    # {
+    #     "result": [
+    #         {
+    #             "id": 2,
+    #             "name": "Science Building machine 2",
+    #             "location": "Science Building 2 floor Mahidol University Salaya",
+    #             "status": "Normal",
+    #         },
+    #         {
+    #             "id": 12,
+    #             "name": "MUIC Building machine 2",
+    #             "location": "MUIC Building 2 floor Mahidol University Salaya",
+    #             "status": "Normal",
     #         },
     #     ],
     #     "error": False,
@@ -299,6 +334,13 @@ will return new vending machine back
 
     ```python
     import requests
+    url = "http://localhost:8000/snack/13/"
+
+    response = requests.request("GET", url)
+
+    print(response.json())
+
+    # {'result': {'id': 13, 'name': 'Orange Juice'}, 'error': False}
 
     url = "http://localhost:8000/snack/13/?delete=True"
 
@@ -326,5 +368,92 @@ will return new vending machine back
     print(response.json())
 
     # {'result': {'id': 3, 'name': 'Orange Juice'}, 'error': False}
+
+    ```
+## Endpoint: localhost:8000/stock/\<machine_id>/\<snack_id>/
+
+- ## **GET** Request
+
+    Return information of machine with stock detail. If following snack didn't exist in machine stock will be auto add with 0 (default) amount. 
+
+    ### Parameter options:
+
+    `delete: boolean` if `true` delete vending machine with following id
+
+    `add: positive integer` will be add to snack amount
+
+    `minus: positive integer` will be remove to snack amount
+
+    `set: positive integer` snack amount will be set to the value
+
+    **NOTE:** `set` option will be operate first then add and minus
+
+    ```python
+    import requests
+
+    url = "http://localhost:8000/machine/1/"
+
+    response = requests.request("GET", url)
+
+    print(response.json())
+
+    # {
+    #     "result": {
+    #         "id": 1,
+    #         "name": "Science Building machine 1",
+    #         "location": "Science Building 1 floor Mahidol University Salaya",
+    #         "status": "Normal",
+    #         "stock": [{"snack_id": 9, "snack_name": "Espresso", "quantity": 20}],
+    #     },
+    #     "error": False,
+    # }
+
+    url = "http://localhost:8000/stock/1/3/"
+
+    response = requests.request("GET", url)
+
+    print(response.json())
+
+    # {
+    #     "result": {
+    #         "id": 1,
+    #         "name": "Science Building machine 1",
+    #         "location": "Science Building 1 floor Mahidol University Salaya",
+    #         "status": "Out of Stock",
+    #         "stock": [
+    #             {"snack_id": 9, "snack_name": "Espresso", "quantity": 20},
+    #             {"snack_id": 3, "snack_name": "Orange Juice", "quantity": 0},
+    #         ],
+    #     },
+    #     "error": False,
+    # }
+
+    url = "http://localhost:8000/stock/1/3/?add=30&?minus=10&set=9"
+
+    response = requests.request("GET", url)
+
+    print(response.json())
+
+    # {
+    #     "result": {
+    #         "id": 1,
+    #         "name": "Science Building machine 1",
+    #         "location": "Science Building 1 floor Mahidol University Salaya",
+    #         "status": "Normal",
+    #         "stock": [
+    #             {"snack_id": 9, "snack_name": "Espresso", "quantity": 20},
+    #             {"snack_id": 3, "snack_name": "Orange Juice", "quantity": 39},
+    #         ],
+    #     },
+    #     "error": False,
+    # }
+
+    url = "http://localhost:8000/stock/1/3/?delete=True"
+
+    response = requests.request("GET", url)
+
+    print(response.json())
+
+    # {"result": "remove snack Orange Juice from machine id=1", "error": False}
 
     ```

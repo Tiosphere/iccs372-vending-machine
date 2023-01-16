@@ -1,6 +1,5 @@
 from typing import Any
 from myapp.models import Machine, Stock, Snack
-import json
 
 
 def snack_serializer(instance: Snack) -> dict[str, Any]:
