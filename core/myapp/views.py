@@ -100,6 +100,9 @@ def snack_views(request: HttpRequest) -> JsonResponse:
         to create new snack and return new created snack
     method GET:
         return list of snack
+
+        options:
+            name: string to search for snack that contain specific name
     """
     if request.method == "POST":
         form = SnackForm(request.POST)
@@ -108,8 +111,13 @@ def snack_views(request: HttpRequest) -> JsonResponse:
         else:
             return JsonResponse(data=json_format(form.errors.get_json_data, error=True))
     elif request.method == "GET":
+        query: BaseManager[Snack] = Snack.objects.all()
+        # filter process
+        if request.GET.get("name") is not None:
+            query = query.filter(name__icontains=request.GET.get("name"))
+
         return JsonResponse(
-            data=json_format([snack_serializer(item) for item in Snack.objects.all()])
+            data=json_format([snack_serializer(item) for item in query.all()])
         )
     return HttpResponseNotAllowed(["GET", "POST"])
 

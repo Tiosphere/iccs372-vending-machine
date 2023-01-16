@@ -17,19 +17,24 @@ FORMAT: 1A
 
 ## Setup
 1. ### clone this repository to your computer
+   
 2. ### open up the folder in your favorite IDE
+   
 3. ### install dependencies
 
     ``` python
     pip install -r requirements.txt
     ```
+
 4. ### go into core folder
 
     ```python
     cd core
     ```
+
 5. ### initialize django
-    1. Simple way
+   
+    1.  Simple way
 
         ```python
         py manage.py easy_setup
@@ -47,12 +52,22 @@ FORMAT: 1A
         py manage.py create_sample
 
         ```
+    3. Set up your own database
+   
+       1. go to `core/setting.py` and config `DATABASES` variable
+   
+       2. install dependencies
+   
+       3. follow step above
+   
 6. ### run local server
+   
     ``` python
     py manage.py runserver
     ```
 
 7. ### now you should see something similar to this
+   
     ```python
     System check identified no issues (0 silenced).
     January 15, 2023 - 14:13:12
@@ -60,15 +75,16 @@ FORMAT: 1A
     Starting development server at http://127.0.0.1:8000/
     Quit the server with CTRL-BREAK.
     ```
+
 # API
 
-> ## Endpoint: localhost:8000/machine/
+## Endpoint: localhost:8000/machine/
 
 - ## **GET** Request
 
     ### parameter options:
 
-    `detail: boolean` default is `false` if `true` show stock of each vending machine
+    `detail: boolean` if `true` show stock of each vending machine
 
     `name: string` to search vending machine that contain provide string
 
@@ -155,7 +171,8 @@ will return new vending machine back
     #     "error": False,
     # }
     ```
-> ## Endpoint: localhost:8000/machine/\<id>/
+
+## Endpoint: localhost:8000/machine/\<id>/
 
 - ## **GET** Request
 
@@ -220,4 +237,86 @@ will return new vending machine back
     #     },
     #     "error": False,
     # }
+    ```
+
+## Endpoint: localhost:8000/snack/
+
+- ## **GET** Request
+
+    get list of all available snacks' name
+
+    ### Parameter options:
+
+    `name: string` to search for snacks that contain provide string
+
+    ```python
+    import requests
+
+    url = "http://localhost:8000/snack/?name=coke"
+
+    response = requests.request("GET", url)
+
+    print(response.json())
+
+    # {"result": [{"id": 3, "name": "Coke"}], "error": False}
+    ```
+
+- ## **POST** Request
+
+    Add new snack into database. Return new snack
+
+    ```python
+    import requests
+
+    url = "http://localhost:8000/snack/"
+
+    payload = {"name": "Orange Juice"}
+
+    response = requests.request("POST", url, data=payload)
+
+    print(response.json())
+
+    # {'result': {'id': 13, 'name': 'Orange Juice'}, 'error': False}
+    ```
+
+## Endpoint: localhost:8000/snack/\<id>/
+
+- ## **GET** Request
+
+    get information of snack with following id
+
+    ### Parameter options:
+
+    `delete: boolean` if `true` delete vending machine with following id
+
+    ```python
+    import requests
+
+    url = "http://localhost:8000/snack/13/?delete=True"
+
+    response = requests.request("GET", url)
+
+    print(response.json())
+
+    # {'result': 'Successfully deleted snack id=13', 'error': False}
+
+    ```
+
+- ## **POST** Request
+
+    Update information of snack. Return updated snack data.
+
+    ```python
+    import requests
+
+    url = "http://localhost:8000/snack/3/"
+
+    payload = {"name": "Orange Juice"}
+
+    response = requests.request("POST", url, data=payload)
+
+    print(response.json())
+
+    # {'result': {'id': 3, 'name': 'Orange Juice'}, 'error': False}
+
     ```

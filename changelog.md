@@ -10,10 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - add new field to serializer
+- fix static warning
 
 ### Added
 - can search machine by name and location
-- add document for machine and machine_instance endpoint
+- add document for machine, machine_instance, snack, and snack_instance endpoint
 
 
 ## 2023-01-15
