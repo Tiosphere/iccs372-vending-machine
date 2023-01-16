@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - can search machine by name and location
 - add document for machine, machine_instance, snack, and snack_instance endpoint
+- add features section into readme
 
 
 ## 2023-01-15

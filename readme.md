@@ -4,7 +4,7 @@ FORMAT: 1A
 
 ## About
 
-### This is the work for the first assignment in ICCS 372 course. You can check latest changes in [changelog](changelog.md).
+### This is the work for the first assignment in ICCS 372 course. You can check for latest changes in [changelog](changelog.md).
 
 * ### Purpose 
 
@@ -15,26 +15,34 @@ FORMAT: 1A
     * CRUD vending machine (name, location, etc.)
     * each vending machine has own stock
 
-## Setup
-1. ### clone this repository to your computer
+# Features
+- Each vending machine has own storage and stock
+- Search for machine by name and location
+- Easily add, remove, and update machine data
+- Easily change snack name across all machine
+- Auto update vending machine status
+- Add, Minus, and Set command to easily update machine stock
+
+# Setup
+1. clone this repository to your computer
    
-2. ### open up the folder in your favorite IDE
-   
-3. ### install dependencies
+2. open up the folder in your favorite IDE
+
+3. install dependencies
 
     ``` python
     pip install -r requirements.txt
     ```
 
-4. ### go into core folder
+4. go into core folder
 
     ```python
     cd core
     ```
 
-5. ### initialize django
+5. initialize django setup
    
-    1.  Simple way
+    1.  Simplest way (For people who new to django)
 
         ```python
         py manage.py easy_setup
@@ -43,7 +51,7 @@ FORMAT: 1A
         py manage.py flush
 
         ```
-    2. Standard way (For person who familiar with django)
+    2. Standard way (For people who familiar with django)
 
         ```python
         py manage.py migrate
@@ -60,13 +68,13 @@ FORMAT: 1A
    
        3. follow step above
    
-6. ### run local server
+6. run local server
    
     ``` python
     py manage.py runserver
     ```
 
-7. ### now you should see something similar to this
+7. now you should see something similar to this
    
     ```python
     System check identified no issues (0 silenced).
