@@ -21,6 +21,7 @@ def machine_serializer(instance: Machine) -> dict[str, Any]:
     """Create json format of vending machine without stock detail"""
     return {
         "id": instance.id,
+        "name": instance.name,
         "location": instance.location,
         "status": instance.status,
     }
@@ -30,6 +31,7 @@ def machine_detail_serializer(instance: Machine) -> dict[str, Any]:
     """Create json format of vending machine with stock detail"""
     return {
         "id": instance.id,
+        "name": instance.name,
         "location": instance.location,
         "status": instance.status,
         "stock": [

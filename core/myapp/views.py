@@ -5,6 +5,7 @@ from django.http import (
     HttpResponseNotAllowed,
     JsonResponse,
 )
+from django.db.models.manager import BaseManager
 from myapp.forms import MachineForm, SnackForm, StockForm
 from myapp.models import Machine, Snack, Stock
 from myapp.serializers import (
@@ -23,8 +24,11 @@ def machine_views(request: HttpRequest) -> HttpResponse:
     method GET:
         return list of machine
     options:
-        detail: boolean = False (default)
-        if True return list of machine with stock detail
+        detail: boolean = False (default) if True return list of machine with stock detail
+
+        name: string to search for machine that contain specific name
+
+        location: string to search for machine that contain specific location
     """
     if request.method == "POST":
         form = MachineForm(request.POST)
@@ -34,22 +38,23 @@ def machine_views(request: HttpRequest) -> HttpResponse:
             return JsonResponse(data=json_format(form.errors.get_json_data, error=True))
 
     elif request.method == "GET":
+        query: BaseManager[Machine] = Machine.objects.all()
+        # filter process
+        if request.GET.get("name") is not None:
+            query = query.filter(name__icontains=request.GET.get("name"))
+        if request.GET.get("location") is not None:
+            query = query.filter(location__icontains=request.GET.get("location"))
         # Check for detail arg
         if not request.GET.get("detail", False):
             return JsonResponse(
-                data=json_format(
-                    [
-                        machine_serializer(item)
-                        for item in Machine.objects.all().prefetch_related("stock")
-                    ]
-                ),
+                data=json_format([machine_serializer(item) for item in query]),
             )
         else:
             return JsonResponse(
                 data=json_format(
                     [
                         machine_detail_serializer(item)
-                        for item in Machine.objects.all().prefetch_related("stock")
+                        for item in query.prefetch_related("stock")
                     ]
                 ),
             )
