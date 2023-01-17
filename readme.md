@@ -31,7 +31,8 @@
 - Easily change snack name across all machines
 - Auto update vending machine status
   - NORMAL: all snacks are available
-  - OUT OF STOCK: some or all snacks are out
+  - REFILL: some snacks are out
+  - OFFLINE: out of service
 - Add, Minus, and Set command to easily update machine stock
 
 # Setup

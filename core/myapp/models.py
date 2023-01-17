@@ -20,8 +20,17 @@ class Snack(models.Model):
 
 class Machine(models.Model):
     class MachineStatus(models.TextChoices):
+        """
+        NORMAL: all working find
+
+        REFILL: some snacks are out
+
+        OFFLINE: out of services
+        """
+
         NORMAL = _("Normal")
-        OUT_OF_STOCK = _("Out of Stock")
+        REFILL = _("Refill")
+        OFFLINE = _("Offline")
 
     """Model for Vending machine contain machine individual information"""
 
@@ -34,7 +43,7 @@ class Machine(models.Model):
     status: models.CharField = models.CharField(
         max_length=20,
         choices=MachineStatus.choices,
-        default=MachineStatus.OUT_OF_STOCK,
+        default=MachineStatus.OFFLINE,
         editable=True,
     )
 
@@ -53,7 +62,7 @@ class Stock(models.Model):
 
     id: models.BigAutoField = models.BigAutoField(primary_key=True)
     machine: models.ForeignKey = models.ForeignKey(to=Machine, on_delete=models.CASCADE)
-    snack: models.ForeignKey = models.ForeignKey(to=Snack, on_delete=models.PROTECT)
+    snack: models.ForeignKey = models.ForeignKey(to=Snack, on_delete=models.CASCADE)
     quantity: models.PositiveIntegerField = models.PositiveIntegerField(
         default=0, editable=True
     )
