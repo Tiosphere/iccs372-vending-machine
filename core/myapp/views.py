@@ -39,7 +39,7 @@ def machine_views(request: HttpRequest) -> HttpResponse:
         if request.GET.get("location") is not None:
             query = query.filter(location__icontains=request.GET.get("location"))
         # Check for detail arg
-        if not request.GET.get("detail", False):
+        if request.GET.get("detail", "false").lower() != "true":
             return JsonResponse(
                 data=json_format([machine_serializer(item) for item in query]),
             )
@@ -80,7 +80,7 @@ def machine_instance(request: HttpRequest, id: int) -> HttpResponse:
             return JsonResponse(data=json_format(form.errors.get_json_data(), error=True))
     elif request.method == "GET":
         # check delete arg
-        if request.GET.get("delete", False):
+        if request.GET.get("delete", "false").lower() == "true":
             instance.delete()
             return JsonResponse(data=json_format(f"Successfully deleted machine id={id}"))
         return JsonResponse(data=json_format(machine_detail_serializer(instance)))
@@ -139,7 +139,7 @@ def snack_instance(request: HttpRequest, id: int) -> HttpResponse:
             return JsonResponse(data=json_format(form.errors.get_json_data(), error=True))
     elif request.method == "GET":
         # check delete arg
-        if request.GET.get("delete", False):
+        if request.GET.get("delete", "false").lower() == "true":
             instance.delete()
             return JsonResponse(data=json_format(f"Successfully deleted snack id={id}"))
         return JsonResponse(data=json_format(snack_serializer(instance)))
@@ -175,7 +175,7 @@ def stock_view(request: HttpRequest, machine_id: int, snack_id: int) -> HttpResp
         machine=machine_instance, snack=snack_instance
     )[0]
     if request.method == "GET":
-        if request.GET.get("delete", False):
+        if request.GET.get("delete", "false").lower() == "true":
             instance.delete()
             return JsonResponse(
                 data=json_format(
