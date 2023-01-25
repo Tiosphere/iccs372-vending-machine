@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### changed
 - fix some bugs
+- change method check with string to enum class
+- change variables' name to be easily understand
+- change view functions name to end with 'view'
 
 ### Added
 - add test for machine and machine instance views

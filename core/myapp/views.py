@@ -10,6 +10,13 @@ from myapp.serializers import (
 )
 
 
+class RequestMethod(enumerate):
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
+    DELETE = "DELETE"
+
+
 # Create your views here.
 def machine_views(request: HttpRequest) -> HttpResponse:
     """
@@ -24,14 +31,14 @@ def machine_views(request: HttpRequest) -> HttpResponse:
 
         location: string to search for machine that contain specific location
     """
-    if request.method == "POST":
+    if request.method == RequestMethod.POST:
         form = MachineForm(request.POST)
         if form.is_valid():
             return JsonResponse(data=json_format(machine_serializer(form.save(True))))
         else:
             return JsonResponse(data=json_format(form.errors.get_json_data(), error=True))
 
-    elif request.method == "GET":
+    elif request.method == RequestMethod.GET:
         query: BaseManager[Machine] = Machine.objects.all()
         # filter process
         if request.GET.get("name") is not None:
@@ -52,10 +59,10 @@ def machine_views(request: HttpRequest) -> HttpResponse:
                     ]
                 ),
             )
-    return HttpResponseNotAllowed(["GET", "POST"])
+    return HttpResponseNotAllowed([RequestMethod.GET, RequestMethod.POST])
 
 
-def machine_instance(request: HttpRequest, id: int) -> HttpResponse:
+def machine_instance_view(request: HttpRequest, id: int) -> HttpResponse:
     """
     method POST:
         to update data of current machine and return new update machine instance
@@ -70,7 +77,7 @@ def machine_instance(request: HttpRequest, id: int) -> HttpResponse:
         return JsonResponse(
             data=json_format("Can't find machine with this id", error=True)
         )
-    if request.method == "POST":
+    if request.method == RequestMethod.POST:
         # check form
         form = MachineForm(request.POST, instance=instance)
         if form.is_valid():
@@ -78,14 +85,14 @@ def machine_instance(request: HttpRequest, id: int) -> HttpResponse:
             return JsonResponse(data=json_format(machine_serializer(form.save(True))))
         else:
             return JsonResponse(data=json_format(form.errors.get_json_data(), error=True))
-    elif request.method == "GET":
+    elif request.method == RequestMethod.GET:
         # check delete arg
         if request.GET.get("delete", "false").lower() == "true":
             instance.delete()
             return JsonResponse(data=json_format(f"Successfully deleted machine id={id}"))
         return JsonResponse(data=json_format(machine_detail_serializer(instance)))
 
-    return HttpResponseNotAllowed(["GET", "POST"])
+    return HttpResponseNotAllowed([RequestMethod.GET, RequestMethod.POST])
 
 
 def snack_views(request: HttpRequest) -> JsonResponse:
@@ -98,13 +105,13 @@ def snack_views(request: HttpRequest) -> JsonResponse:
         options:
             name: string to search for snack that contain specific name
     """
-    if request.method == "POST":
+    if request.method == RequestMethod.POST:
         form = SnackForm(request.POST)
         if form.is_valid():
             return JsonResponse(data=json_format(snack_serializer(form.save(True))))
         else:
             return JsonResponse(data=json_format(form.errors.get_json_data(), error=True))
-    elif request.method == "GET":
+    elif request.method == RequestMethod.GET:
         query: BaseManager[Snack] = Snack.objects.all()
         # filter process
         if request.GET.get("name") is not None:
@@ -113,10 +120,10 @@ def snack_views(request: HttpRequest) -> JsonResponse:
         return JsonResponse(
             data=json_format([snack_serializer(item) for item in query.all()])
         )
-    return HttpResponseNotAllowed(["GET", "POST"])
+    return HttpResponseNotAllowed([RequestMethod.GET, RequestMethod.POST])
 
 
-def snack_instance(request: HttpRequest, id: int) -> HttpResponse:
+def snack_instance_view(request: HttpRequest, id: int) -> HttpResponse:
     """
     method POST:
         to update data of current snack and return new update snack instance
@@ -126,25 +133,25 @@ def snack_instance(request: HttpRequest, id: int) -> HttpResponse:
             delete: boolean if True delete snack with this id
     """
     # check if instance exist or not
-    instance = Snack.objects.filter(id=id).first()
-    if instance is None:
+    snack_instance = Snack.objects.filter(id=id).first()
+    if snack_instance is None:
         return JsonResponse(data=json_format("Can't find snack with this id", error=True))
-    if request.method == "POST":
+    if request.method == RequestMethod.POST:
         # check form
-        form = SnackForm(request.POST, instance=instance)
+        form = SnackForm(request.POST, instance=snack_instance)
         if form.is_valid():
-            instance: Snack = form.save(commit=False)
+            snack_instance: Snack = form.save(commit=False)
             return JsonResponse(data=json_format(snack_serializer(form.save(True))))
         else:
             return JsonResponse(data=json_format(form.errors.get_json_data(), error=True))
-    elif request.method == "GET":
+    elif request.method == RequestMethod.GET:
         # check delete arg
         if request.GET.get("delete", "false").lower() == "true":
-            instance.delete()
+            snack_instance.delete()
             return JsonResponse(data=json_format(f"Successfully deleted snack id={id}"))
-        return JsonResponse(data=json_format(snack_serializer(instance)))
+        return JsonResponse(data=json_format(snack_serializer(snack_instance)))
 
-    return HttpResponseNotAllowed(["GET", "POST"])
+    return HttpResponseNotAllowed([RequestMethod.GET, RequestMethod.POST])
 
 
 def stock_view(request: HttpRequest, machine_id: int, snack_id: int) -> HttpResponse:
@@ -171,29 +178,31 @@ def stock_view(request: HttpRequest, machine_id: int, snack_id: int) -> HttpResp
     snack_instance = Snack.objects.filter(id=snack_id).first()
     if snack_instance is None:
         return JsonResponse(data=json_format("Can't find snack with this id", error=True))
-    instance = Stock.objects.get_or_create(
+    stock_instance = Stock.objects.get_or_create(
         machine=machine_instance, snack=snack_instance
-    )[0]
-    if request.method == "GET":
+    )[
+        0
+    ]  # function return tuple
+    if request.method == RequestMethod.GET:
         if request.GET.get("delete", "false").lower() == "true":
-            instance.delete()
+            stock_instance.delete()
             return JsonResponse(
                 data=json_format(
                     f"remove snack {snack_instance.name} from machine id={machine_instance.id}"
                 )
             )
-        add: str = request.GET.get("add", "0")
-        minus: str = request.GET.get("minus", "0")
-        start: str = request.GET.get("set", str(instance.quantity))
+        add: int = request.GET.get("add", "0")
+        minus: int = request.GET.get("minus", "0")
+        start: int = request.GET.get("set", str(stock_instance.quantity))
         if not (add.isnumeric() and minus.isnumeric() and start.isnumeric()):
             return JsonResponse(
                 data=json_format("Invalid parameter(s) is found", error=True)
             )
-        instance.quantity = abs(int(start)) + abs(int(add)) - abs(int(minus))
-        instance.save()
+        stock_instance.quantity = abs(int(start)) + abs(int(add)) - abs(int(minus))
+        stock_instance.save()
         return JsonResponse(
             data=json_format(
                 machine_detail_serializer(Machine.objects.get(id=machine_id))
             )
         )
-    return HttpResponseNotAllowed(["GET"])
+    return HttpResponseNotAllowed([RequestMethod.GET])
