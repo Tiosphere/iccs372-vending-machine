@@ -1,6 +1,11 @@
 from django.test import TestCase, Client
 from myapp.models import Machine, Stock, Snack
-from myapp.serializers import machine_detail_serializer, machine_serializer
+from myapp.serializers import (
+    machine_detail_serializer,
+    machine_serializer,
+    snack_serializer,
+    stock_serializer,
+)
 from django.http import HttpResponse
 from django.urls import reverse
 from typing import Any, Final
@@ -171,3 +176,99 @@ class TestMachineInstance(TestCase):
         result: dict[str, Any] = content.get("result")
         self.assertEqual(response.status_code, StatusCode.NORMAL)
         self.assertIsNone(Machine.objects.filter(id=self.id).first())
+
+
+class TestSnackView(TestCase):
+    def setUpTestData():
+        management.call_command("create_sample")
+
+    def setUp(self):
+        self.client: Client = Client()
+        self.url: str = reverse("myapp:snack")
+
+    def test_get_simple(self):
+        response: HttpResponse = self.client.get(self.url)
+        content: dict[str, Any] = json.loads(response.content)
+        result: list[dict[str, Any]] = content.get("result")
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(len(result), Snack.objects.all().count())
+
+    def test_get_options_name(self):
+        # empty fields
+        response: HttpResponse = self.client.get(self.url + "?name=")
+        content: dict[str, Any] = json.loads(response.content)
+        result: list[dict[str, Any]] = content.get("result")
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(len(result), Snack.objects.all().count())
+        # search something
+        response: HttpResponse = self.client.get(self.url + "?name=water")
+        content: dict[str, Any] = json.loads(response.content)
+        result: list[dict[str, Any]] = content.get("result")
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(
+            len(result), Snack.objects.filter(name__icontains="water").count()
+        )
+
+    def test_post_simple(self):
+        response: HttpResponse = self.client.post(self.url, data={"name": "new snack"})
+        content: dict[str, Any] = json.loads(response.content)
+        result: dict[str, Any] = content.get("result")
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(result, snack_serializer(Snack.objects.last()))
+
+    def test_delete_simple(self):
+        response: HttpResponse = self.client.delete(self.url)
+        self.assertEqual(response.status_code, StatusCode.NOT_ALLOW)
+
+    def test_put_simple(self):
+        response: HttpResponse = self.client.put(self.url)
+        self.assertEqual(response.status_code, StatusCode.NOT_ALLOW)
+
+
+class TestSnackInstance(TestCase):
+    def setUpTestData():
+        management.call_command("create_sample")
+
+    def setUp(self):
+        self.client: Client = Client()
+        self.id: int = 1
+        self.url: str = reverse("myapp:snack_instance", args=[self.id])
+
+    def test_invalid_id(self):
+        response: HttpResponse = self.client.get(
+            reverse("myapp:snack_instance", args=[100])
+        )
+        content: dict[str, Any] = json.loads(response.content)
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(content.get("error"), True)
+
+    def test_get_simple(self):
+        response: HttpResponse = self.client.get(self.url)
+        content: dict[str, Any] = json.loads(response.content)
+        result: dict[str, Any] = content.get("result")
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(result, snack_serializer(Snack.objects.get(id=self.id)))
+
+    def test_post_simple(self):
+        response: HttpResponse = self.client.post(
+            self.url, data={"name": "new snack name"}
+        )
+        content: dict[str, Any] = json.loads(response.content)
+        result: list[dict[str, Any]] = content.get("result")
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(result, snack_serializer(Snack.objects.get(id=self.id)))
+
+    def test_delete_simple(self):
+        response: HttpResponse = self.client.delete(self.url)
+        self.assertEqual(response.status_code, StatusCode.NOT_ALLOW)
+
+    def test_put_simple(self):
+        response: HttpResponse = self.client.put(self.url)
+        self.assertEqual(response.status_code, StatusCode.NOT_ALLOW)
+
+    def test_get_options_delete(self):
+        response: HttpResponse = self.client.get(self.url + "?delete=True")
+        content: dict[str, Any] = json.loads(response.content)
+        result: dict[str, Any] = content.get("result")
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertIsNone(Snack.objects.filter(id=self.id).first())
