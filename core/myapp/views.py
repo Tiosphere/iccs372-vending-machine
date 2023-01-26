@@ -198,7 +198,7 @@ def stock_view(request: HttpRequest, machine_id: int, snack_id: int) -> HttpResp
             return JsonResponse(
                 data=json_format("Invalid parameter(s) is found", error=True)
             )
-        stock_instance.quantity = abs(int(start)) + abs(int(add)) - abs(int(minus))
+        stock_instance.quantity = int(start) + int(add) - int(minus)
         stock_instance.save()
         return JsonResponse(
             data=json_format(

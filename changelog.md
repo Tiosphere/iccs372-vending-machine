@@ -8,8 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 2023-01-26
 
+### changed 
+- remove redundant operation in stock views
+
 ### Added
 - add test for snack views
+- add test for stock view
 
 
 ## 2023-01-25

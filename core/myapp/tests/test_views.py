@@ -272,3 +272,101 @@ class TestSnackInstance(TestCase):
         result: dict[str, Any] = content.get("result")
         self.assertEqual(response.status_code, StatusCode.NORMAL)
         self.assertIsNone(Snack.objects.filter(id=self.id).first())
+
+
+class TestStockInstance(TestCase):
+    def setUpTestData():
+        management.call_command("create_sample")
+
+    def setUp(self):
+        self.client: Client = Client()
+        self.machine_id: int = 1
+        self.machine_instance = Machine.objects.get(id=self.machine_id)
+        self.snack_id = self.machine_instance.stock.first().snack.id
+        self.url: str = reverse("myapp:stock", args=[self.machine_id, self.snack_id])
+
+    def test_get_simple(self):
+        response: HttpResponse = self.client.get(self.url)
+        content: dict[str, Any] = json.loads(response.content)
+        result: dict[str, Any] = content.get("result")
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(result, machine_detail_serializer(self.machine_instance))
+
+    def test_get_options_add(self):
+        response: HttpResponse = self.client.get(self.url + "?add=20")
+        content: dict[str, Any] = json.loads(response.content)
+        result: dict[str, Any] = content.get("result")
+        self.machine_instance.refresh_from_db()
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(result, machine_detail_serializer(self.machine_instance))
+
+    def test_get_options_minus(self):
+        response: HttpResponse = self.client.get(self.url + "?minus=20")
+        content: dict[str, Any] = json.loads(response.content)
+        result: dict[str, Any] = content.get("result")
+        self.machine_instance.refresh_from_db()
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(result, machine_detail_serializer(self.machine_instance))
+
+    def test_get_options_set(self):
+        response: HttpResponse = self.client.get(self.url + "?set=200")
+        content: dict[str, Any] = json.loads(response.content)
+        result: dict[str, Any] = content.get("result")
+        self.machine_instance.refresh_from_db()
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(result, machine_detail_serializer(self.machine_instance))
+
+    def test_get_options_error(self):
+        # as negative integer
+        response: HttpResponse = self.client.get(self.url + "?set=-300")
+        content: dict[str, Any] = json.loads(response.content)
+        result: dict[str, Any] = content.get("result")
+        self.machine_instance.refresh_from_db()
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(content.get("error"), True)
+        # as text
+        response: HttpResponse = self.client.get(self.url + "?set=hej")
+        content: dict[str, Any] = json.loads(response.content)
+        result: dict[str, Any] = content.get("result")
+        self.machine_instance.refresh_from_db()
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(content.get("error"), True)
+
+    def test_get_error_id(self):
+        # machine id error
+        response: HttpResponse = self.client.get(
+            reverse("myapp:stock", args=[100, self.snack_id])
+        )
+        content: dict[str, Any] = json.loads(response.content)
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(content.get("error"), True)
+        # snack id error
+        response: HttpResponse = self.client.get(
+            reverse("myapp:stock", args=[self.machine_id, 100])
+        )
+        content: dict[str, Any] = json.loads(response.content)
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(content.get("error"), True)
+
+    def test_post_simple(self):
+        response: HttpResponse = self.client.post(self.url)
+        self.assertEqual(response.status_code, StatusCode.NOT_ALLOW)
+
+    def test_delete_simple(self):
+        response: HttpResponse = self.client.delete(self.url)
+        self.assertEqual(response.status_code, StatusCode.NOT_ALLOW)
+
+    def test_put_simple(self):
+        response: HttpResponse = self.client.put(self.url)
+        self.assertEqual(response.status_code, StatusCode.NOT_ALLOW)
+
+    def test_get_options_delete(self):
+        response: HttpResponse = self.client.get(self.url + "?delete=True")
+        content: dict[str, Any] = json.loads(response.content)
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(
+            0,
+            Machine.objects.get(id=self.machine_id)
+            .stock.filter(snack=Snack.objects.get(id=self.snack_id))
+            .count(),
+        )
