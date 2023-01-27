@@ -191,9 +191,9 @@ def stock_view(request: HttpRequest, machine_id: int, snack_id: int) -> HttpResp
                     f"remove snack {snack_instance.name} from machine id={machine_instance.id}"
                 )
             )
-        add: int = request.GET.get("add", "0")
-        minus: int = request.GET.get("minus", "0")
-        start: int = request.GET.get("set", str(stock_instance.quantity))
+        add: str = request.GET.get("add", "0")
+        minus: str = request.GET.get("minus", "0")
+        start: str = request.GET.get("set", str(stock_instance.quantity))
         if not (add.isnumeric() and minus.isnumeric() and start.isnumeric()):
             return JsonResponse(
                 data=json_format("Invalid parameter(s) is found", error=True)

@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 2023-01-07
 
 ### Changed
-- remove unused variable in tests
+- remove unused variables in tests
+- change variables name in signal
 
 
 ## 2023-01-26
@@ -27,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### changed
 - fix some bugs
 - change method check with string to enum class
-- change variables' name to be easily understand
+- change variables name to be easily understand
 - change view functions name to end with 'view'
 
 ### Added
