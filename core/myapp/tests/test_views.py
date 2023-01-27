@@ -172,8 +172,6 @@ class TestMachineInstance(TestCase):
 
     def test_get_options_delete(self):
         response: HttpResponse = self.client.get(self.url + "?delete=True")
-        content: dict[str, Any] = json.loads(response.content)
-        result: dict[str, Any] = content.get("result")
         self.assertEqual(response.status_code, StatusCode.NORMAL)
         self.assertIsNone(Machine.objects.filter(id=self.id).first())
 
@@ -268,8 +266,6 @@ class TestSnackInstance(TestCase):
 
     def test_get_options_delete(self):
         response: HttpResponse = self.client.get(self.url + "?delete=True")
-        content: dict[str, Any] = json.loads(response.content)
-        result: dict[str, Any] = content.get("result")
         self.assertEqual(response.status_code, StatusCode.NORMAL)
         self.assertIsNone(Snack.objects.filter(id=self.id).first())
 
@@ -320,14 +316,12 @@ class TestStockInstance(TestCase):
         # as negative integer
         response: HttpResponse = self.client.get(self.url + "?set=-300")
         content: dict[str, Any] = json.loads(response.content)
-        result: dict[str, Any] = content.get("result")
         self.machine_instance.refresh_from_db()
         self.assertEqual(response.status_code, StatusCode.NORMAL)
         self.assertEqual(content.get("error"), True)
         # as text
         response: HttpResponse = self.client.get(self.url + "?set=hej")
         content: dict[str, Any] = json.loads(response.content)
-        result: dict[str, Any] = content.get("result")
         self.machine_instance.refresh_from_db()
         self.assertEqual(response.status_code, StatusCode.NORMAL)
         self.assertEqual(content.get("error"), True)
@@ -362,7 +356,6 @@ class TestStockInstance(TestCase):
 
     def test_get_options_delete(self):
         response: HttpResponse = self.client.get(self.url + "?delete=True")
-        content: dict[str, Any] = json.loads(response.content)
         self.assertEqual(response.status_code, StatusCode.NORMAL)
         self.assertEqual(
             0,
