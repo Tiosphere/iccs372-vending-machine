@@ -72,25 +72,25 @@ def machine_instance_view(request: HttpRequest, id: int) -> HttpResponse:
             delete: boolean if True delete machine with this id
     """
     # check if instance exist or not
-    instance = Machine.objects.filter(id=id).first()
-    if instance is None:
+    machine_instance = Machine.objects.filter(id=id).first()
+    if machine_instance is None:
         return JsonResponse(
             data=json_format("Can't find machine with this id", error=True)
         )
     if request.method == RequestMethod.POST:
         # check form
-        form = MachineForm(request.POST, instance=instance)
+        form = MachineForm(request.POST, instance=machine_instance)
         if form.is_valid():
-            instance: Machine = form.save(commit=False)
+            machine_instance: Machine = form.save(commit=False)
             return JsonResponse(data=json_format(machine_serializer(form.save(True))))
         else:
             return JsonResponse(data=json_format(form.errors.get_json_data(), error=True))
     elif request.method == RequestMethod.GET:
         # check delete arg
         if request.GET.get("delete", "false").lower() == "true":
-            instance.delete()
+            machine_instance.delete()
             return JsonResponse(data=json_format(f"Successfully deleted machine id={id}"))
-        return JsonResponse(data=json_format(machine_detail_serializer(instance)))
+        return JsonResponse(data=json_format(machine_detail_serializer(machine_instance)))
 
     return HttpResponseNotAllowed([RequestMethod.GET, RequestMethod.POST])
 
