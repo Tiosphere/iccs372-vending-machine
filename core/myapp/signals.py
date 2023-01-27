@@ -7,13 +7,13 @@ from myapp.models import Machine, Stock
 def machine_status_update(sender, instance: Stock, **kwargs):
     """Keep update vending machine status after edit stock"""
     query = Stock.objects.filter(machine=instance.machine)
-    all: int = query.count()
-    out: int = query.filter(quantity=0).count()
-    if not out:
+    all_stock: int = query.count()
+    out_stock: int = query.filter(quantity=0).count()
+    if not out_stock:
         Machine.objects.filter(id=instance.machine.id).update(
             status=Machine.MachineStatus.NORMAL
         )
-    elif out == all:
+    elif out_stock == all_stock:
         Machine.objects.filter(id=instance.machine.id).update(
             status=Machine.MachineStatus.OFFLINE
         )

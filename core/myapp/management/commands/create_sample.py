@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any):
         """Use to create sample data"""
-        self.stdout.write(self.style.MIGRATE_HEADING("Creating sample data:"))
+        self.stdout.write(self.style.MIGRATE_HEADING("\nCreating sample data:"))
         if Snack.objects.all().exists():
             self.stdout.write(
                 self.style.ERROR("  ERR:") + " You need to call 'manage.py flush' first"
