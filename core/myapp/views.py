@@ -81,7 +81,6 @@ def machine_instance_view(request: HttpRequest, id: int) -> HttpResponse:
         # check form
         form = MachineForm(request.POST, instance=machine_instance)
         if form.is_valid():
-            machine_instance: Machine = form.save(commit=False)
             return JsonResponse(data=json_format(machine_serializer(form.save(True))))
         else:
             return JsonResponse(data=json_format(form.errors.get_json_data(), error=True))
@@ -140,7 +139,6 @@ def snack_instance_view(request: HttpRequest, id: int) -> HttpResponse:
         # check form
         form = SnackForm(request.POST, instance=snack_instance)
         if form.is_valid():
-            snack_instance: Snack = form.save(commit=False)
             return JsonResponse(data=json_format(snack_serializer(form.save(True))))
         else:
             return JsonResponse(data=json_format(form.errors.get_json_data(), error=True))

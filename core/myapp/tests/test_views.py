@@ -4,7 +4,6 @@ from myapp.serializers import (
     machine_detail_serializer,
     machine_serializer,
     snack_serializer,
-    stock_serializer,
 )
 from django.http import HttpResponse
 from django.urls import reverse
