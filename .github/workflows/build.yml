@@ -26,7 +26,7 @@ jobs:
           pip install -r requirements.txt
 
        # Test
-      - name: Test with pytest
+      - name: Test with coverage and django unittest
         run: |
           cd core
           coverage run manage.py test
