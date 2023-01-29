@@ -28,6 +28,7 @@ jobs:
        # Test
       - name: Test with pytest
         run: |
+          cd core
           coverage run manage.py test
           coverage xml
       - name: SonarCloud Scan
