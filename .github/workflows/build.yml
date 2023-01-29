@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - main
+      - sonar
+      - unitest
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
@@ -13,6 +15,21 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      # Dependencies
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.10
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+       # Test
+      - name: Test with pytest
+        run: |
+          coverage run manage.py test
+          coverage xml
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
