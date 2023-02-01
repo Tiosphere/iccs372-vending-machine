@@ -1,21 +1,25 @@
-from django.test import TestCase, Client
-from myapp.models import Machine, Stock, Snack
+import json
+from typing import Any, Final
+
+from django.core import management
+from django.http import HttpResponse
+from django.test import Client, TestCase
+from django.urls import reverse
+from myapp.models import Machine, Snack, Stock
 from myapp.serializers import (
     machine_detail_serializer,
     machine_serializer,
     snack_serializer,
 )
-from django.http import HttpResponse
-from django.urls import reverse
-from typing import Any, Final
-from django.core import management
-import json
 
 
 class StatusCode(enumerate):
     NORMAL = 200
     NOT_FOUND = 404
     NOT_ALLOW = 405
+
+
+DELETED_QUERY: Final[str] = "?delete=True"
 
 
 class TestMachineView(TestCase):
@@ -113,9 +117,6 @@ class TestMachineView(TestCase):
         result: dict[str, Any] = content.get("result")
         self.assertEqual(response.status_code, StatusCode.NORMAL)
         self.assertEqual(result, machine_serializer(Machine.objects.last()))
-        # self.assertEqual(result.get("name"), "new machine")
-        # self.assertEqual(result.get("location"), "new machine location")
-        # self.assertEqual(result.get("status"), Machine.MachineStatus.OFFLINE)
 
     def test_delete_simple(self):
         response: HttpResponse = self.client.delete(self.url)
@@ -170,7 +171,7 @@ class TestMachineInstance(TestCase):
         self.assertEqual(response.status_code, StatusCode.NOT_ALLOW)
 
     def test_get_options_delete(self):
-        response: HttpResponse = self.client.get(self.url + "?delete=True")
+        response: HttpResponse = self.client.get(self.url + DELETED_QUERY)
         self.assertEqual(response.status_code, StatusCode.NORMAL)
         self.assertIsNone(Machine.objects.filter(id=self.id).first())
 
@@ -264,7 +265,7 @@ class TestSnackInstance(TestCase):
         self.assertEqual(response.status_code, StatusCode.NOT_ALLOW)
 
     def test_get_options_delete(self):
-        response: HttpResponse = self.client.get(self.url + "?delete=True")
+        response: HttpResponse = self.client.get(self.url + DELETED_QUERY)
         self.assertEqual(response.status_code, StatusCode.NORMAL)
         self.assertIsNone(Snack.objects.filter(id=self.id).first())
 
@@ -275,10 +276,11 @@ class TestStockInstance(TestCase):
 
     def setUp(self):
         self.client: Client = Client()
+        self.name: str = "myapp:stock"
         self.machine_id: int = 1
         self.machine_instance = Machine.objects.get(id=self.machine_id)
         self.snack_id = self.machine_instance.stock.first().snack.id
-        self.url: str = reverse("myapp:stock", args=[self.machine_id, self.snack_id])
+        self.url: str = reverse(self.name, args=[self.machine_id, self.snack_id])
 
     def test_get_simple(self):
         response: HttpResponse = self.client.get(self.url)
@@ -328,14 +330,14 @@ class TestStockInstance(TestCase):
     def test_get_error_id(self):
         # machine id error
         response: HttpResponse = self.client.get(
-            reverse("myapp:stock", args=[100, self.snack_id])
+            reverse(self.name, args=[100, self.snack_id])
         )
         content: dict[str, Any] = json.loads(response.content)
         self.assertEqual(response.status_code, StatusCode.NORMAL)
         self.assertEqual(content.get("error"), True)
         # snack id error
         response: HttpResponse = self.client.get(
-            reverse("myapp:stock", args=[self.machine_id, 100])
+            reverse(self.name, args=[self.machine_id, 100])
         )
         content: dict[str, Any] = json.loads(response.content)
         self.assertEqual(response.status_code, StatusCode.NORMAL)
@@ -354,7 +356,7 @@ class TestStockInstance(TestCase):
         self.assertEqual(response.status_code, StatusCode.NOT_ALLOW)
 
     def test_get_options_delete(self):
-        response: HttpResponse = self.client.get(self.url + "?delete=True")
+        response: HttpResponse = self.client.get(self.url + DELETED_QUERY)
         self.assertEqual(response.status_code, StatusCode.NORMAL)
         self.assertEqual(
             0,

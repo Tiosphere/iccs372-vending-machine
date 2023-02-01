@@ -1,5 +1,5 @@
 from django.test import TestCase
-from myapp.models import Machine, Stock, Snack
+from myapp.models import Machine, Snack, Stock
 
 
 class TestModel(TestCase):
