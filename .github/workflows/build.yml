@@ -29,8 +29,10 @@ jobs:
        # Test
       - name: Test with coverage and django unittest
         run: |
-          coverage run core/manage.py test
-          coverage xml
+          cd core
+          coverage run manage.py test
+          cd ..
+          coverage xml --data-file=core/.coverage
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
