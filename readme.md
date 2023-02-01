@@ -1,5 +1,7 @@
 # Documentation
 
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Tiosphere_iccs372-vending-machine&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Tiosphere_iccs372-vending-machine)
+
 ## About
 
 ### This is the work for the first assignment in ICCS 372 course. You can check for latest changes in [changelog](changelog.md).
