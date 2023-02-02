@@ -5,9 +5,46 @@ on:
       - main
       - sonar
       - unitest
+
   pull_request:
     types: [opened, synchronize, reopened]
+
+env:
+  PYTHON_VERSION: "3.10.9"
+
 jobs:
+  lint:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
+      - name: Lint with isort
+        uses: isort/isort-action@master
+        with:
+          isortVersion: "5.10.1"
+
+      - name: Lint with black
+        uses: psf/black@stable
+        with:
+          version: "22.3.0"
+
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
@@ -16,10 +53,10 @@ jobs:
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       # Dependencies
-      - name: Set up Python 3.10.9
-        uses: actions/setup-python@v1
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v2
         with:
-          python-version: 3.10.9
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
         run: |
@@ -33,6 +70,7 @@ jobs:
           coverage run manage.py test
           cd ..
           coverage xml --data-file=core/.coverage
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:

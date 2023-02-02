@@ -1,14 +1,15 @@
 from typing import Any
-from myapp.models import Machine, Stock, Snack
+
+from myapp.models import Machine, Snack, Stock
 
 
 def snack_serializer(instance: Snack) -> dict[str, Any]:
-    """Create json format of snack"""
+    """Create json format of snack."""
     return {"id": instance.id, "name": instance.name}
 
 
 def stock_serializer(instance: Stock) -> dict[str, Any]:
-    """Create json format of stock"""
+    """Create json format of stock."""
     return {
         "snack_id": instance.snack.id,
         "snack_name": instance.snack.name,
@@ -17,7 +18,7 @@ def stock_serializer(instance: Stock) -> dict[str, Any]:
 
 
 def machine_serializer(instance: Machine) -> dict[str, Any]:
-    """Create json format of vending machine without stock detail"""
+    """Create json format of vending machine without stock detail."""
     return {
         "id": instance.id,
         "name": instance.name,
@@ -27,7 +28,7 @@ def machine_serializer(instance: Machine) -> dict[str, Any]:
 
 
 def machine_detail_serializer(instance: Machine) -> dict[str, Any]:
-    """Create json format of vending machine with stock detail"""
+    """Create json format of vending machine with stock detail."""
     return {
         "id": instance.id,
         "name": instance.name,
@@ -40,5 +41,5 @@ def machine_detail_serializer(instance: Machine) -> dict[str, Any]:
 
 
 def json_format(result: Any = None, error: bool = False) -> dict[str, Any]:
-    """Make sure every JsonResponse data format with this"""
+    """Make sure every JsonResponse data format with this."""
     return {"result": result, "error": error}
