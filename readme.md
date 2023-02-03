@@ -1,12 +1,14 @@
 # Documentation
 
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Tiosphere_iccs372-vending-machine&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Tiosphere_iccs372-vending-machine)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Tiosphere_iccs372-vending-machine&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Tiosphere_iccs372-vending-machine) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Tiosphere_iccs372-vending-machine&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Tiosphere_iccs372-vending-machine)
+
+
 
 ## About
 
 ### This is the work for the first assignment in ICCS 372 course. You can check for latest changes in [changelog](changelog.md).
 
-* ### Purpose 
+* ### Purpose
 
     * To build most maintainable application for manage and tracking vending machine.
 
@@ -39,7 +41,7 @@
 
 # Setup
 1. clone this repository to your computer
-   
+
 2. open up the folder in your favorite IDE
 
 3. install dependencies
@@ -55,7 +57,7 @@
     ```
 
 5. initialize django setup
-   
+
     1.  Simplest way (For people who new to django)
 
         ```python
@@ -75,21 +77,21 @@
 
         ```
     3. Set up your own database
-   
+
        1. go to `core/setting.py` and config `DATABASES` variable
-   
+
        2. install dependencies
-   
+
        3. follow step above
-   
+
 6. run local server
-   
+
     ``` python
     py manage.py runserver
     ```
 
 7. now you should see something similar to this
-   
+
     ```python
     System check identified no issues (0 silenced).
     January 15, 2023 - 14:13:12
@@ -194,7 +196,7 @@
     ```
 * ## **POST** Request
 
-    Create new vending machine. This 
+    Create new vending machine. This
 will return new vending machine back
     ```python
     import requests
@@ -377,7 +379,7 @@ will return new vending machine back
 
 - ## **GET** Request
 
-    Return information of machine with stock detail. If following snack didn't exist in machine stock will be auto add with 0 (default) amount. 
+    Return information of machine with stock detail. If following snack didn't exist in machine stock will be auto add with 0 (default) amount.
 
     ### Parameter options:
 
