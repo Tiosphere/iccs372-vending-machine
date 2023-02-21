@@ -1,20 +1,31 @@
+from django.db import models
 from django.db.models.manager import BaseManager
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed, JsonResponse
 from myapp.forms import MachineForm, SnackForm
-from myapp.models import Machine, Snack, Stock
+from myapp.models import Machine, Snack, Stock, StockLog
 from myapp.serializers import (
     json_format,
     machine_detail_serializer,
     machine_serializer,
     snack_serializer,
+    stock_log_serializer,
 )
 
 
-class RequestMethod(enumerate):
+class RequestMethod(models.TextChoices):
+    """Choices for Request methods."""
+
     GET = "GET"
     POST = "POST"
     PUT = "PUT"
     DELETE = "DELETE"
+
+
+class ErrorMessage(models.TextChoices):
+    """Choices for Error messages."""
+
+    SNACK_404 = "Can't find snack with this id"
+    MACHINE_404 = "Can't find machine with this id"
 
 
 # Create your views here.
@@ -29,14 +40,16 @@ def machine_views(request: HttpRequest) -> HttpResponse:
 
         name: string to search for machine that contain specific name
 
-        location: string to search for machine that contain specific location
+        location: string to search for machine that contain specific location.
     """
     if request.method == RequestMethod.POST:
         form = MachineForm(request.POST)
         if form.is_valid():
             return JsonResponse(data=json_format(machine_serializer(form.save(True))))
         else:
-            return JsonResponse(data=json_format(form.errors.get_json_data(), error=True))
+            return JsonResponse(
+                data=json_format(form.errors.get_json_data(), error=True)
+            )
 
     elif request.method == RequestMethod.GET:
         query: BaseManager[Machine] = Machine.objects.all()
@@ -74,22 +87,26 @@ def machine_instance_view(request: HttpRequest, id: int) -> HttpResponse:
     # check if instance exist or not
     machine_instance = Machine.objects.filter(id=id).first()
     if machine_instance is None:
-        return JsonResponse(
-            data=json_format("Can't find machine with this id", error=True)
-        )
+        return JsonResponse(data=json_format(ErrorMessage.MACHINE_404, error=True))
     if request.method == RequestMethod.POST:
         # check form
         form = MachineForm(request.POST, instance=machine_instance)
         if form.is_valid():
             return JsonResponse(data=json_format(machine_serializer(form.save(True))))
         else:
-            return JsonResponse(data=json_format(form.errors.get_json_data(), error=True))
+            return JsonResponse(
+                data=json_format(form.errors.get_json_data(), error=True)
+            )
     elif request.method == RequestMethod.GET:
         # check delete arg
         if request.GET.get("delete", "false").lower() == "true":
             machine_instance.delete()
-            return JsonResponse(data=json_format(f"Successfully deleted machine id={id}"))
-        return JsonResponse(data=json_format(machine_detail_serializer(machine_instance)))
+            return JsonResponse(
+                data=json_format(f"Successfully deleted machine id={id}")
+            )
+        return JsonResponse(
+            data=json_format(machine_detail_serializer(machine_instance))
+        )
 
     return HttpResponseNotAllowed([RequestMethod.GET, RequestMethod.POST])
 
@@ -109,7 +126,9 @@ def snack_views(request: HttpRequest) -> JsonResponse:
         if form.is_valid():
             return JsonResponse(data=json_format(snack_serializer(form.save(True))))
         else:
-            return JsonResponse(data=json_format(form.errors.get_json_data(), error=True))
+            return JsonResponse(
+                data=json_format(form.errors.get_json_data(), error=True)
+            )
     elif request.method == RequestMethod.GET:
         query: BaseManager[Snack] = Snack.objects.all()
         # filter process
@@ -134,14 +153,16 @@ def snack_instance_view(request: HttpRequest, id: int) -> HttpResponse:
     # check if instance exist or not
     snack_instance = Snack.objects.filter(id=id).first()
     if snack_instance is None:
-        return JsonResponse(data=json_format("Can't find snack with this id", error=True))
+        return JsonResponse(data=json_format(ErrorMessage.SNACK_404, error=True))
     if request.method == RequestMethod.POST:
         # check form
         form = SnackForm(request.POST, instance=snack_instance)
         if form.is_valid():
             return JsonResponse(data=json_format(snack_serializer(form.save(True))))
         else:
-            return JsonResponse(data=json_format(form.errors.get_json_data(), error=True))
+            return JsonResponse(
+                data=json_format(form.errors.get_json_data(), error=True)
+            )
     elif request.method == RequestMethod.GET:
         # check delete arg
         if request.GET.get("delete", "false").lower() == "true":
@@ -169,13 +190,11 @@ def stock_view(request: HttpRequest, machine_id: int, snack_id: int) -> HttpResp
     # check if machine_id valid
     machine_instance = Machine.objects.filter(id=machine_id).first()
     if machine_instance is None:
-        return JsonResponse(
-            data=json_format("Can't find machine with this id", error=True)
-        )
+        return JsonResponse(data=json_format(ErrorMessage.MACHINE_404, error=True))
     # check if snack_id valid
     snack_instance = Snack.objects.filter(id=snack_id).first()
     if snack_instance is None:
-        return JsonResponse(data=json_format("Can't find snack with this id", error=True))
+        return JsonResponse(data=json_format(ErrorMessage.SNACK_404, error=True))
     stock_instance = Stock.objects.get_or_create(
         machine=machine_instance, snack=snack_instance
     )[
@@ -201,6 +220,44 @@ def stock_view(request: HttpRequest, machine_id: int, snack_id: int) -> HttpResp
         return JsonResponse(
             data=json_format(
                 machine_detail_serializer(Machine.objects.get(id=machine_id))
+            )
+        )
+    return HttpResponseNotAllowed([RequestMethod.GET])
+
+
+def snack_log_view(request: HttpRequest, id: int) -> HttpResponse:
+    """Show all log with snack id."""
+    snack_instance: Snack | None = Snack.objects.filter(id=id).first()
+    if snack_instance is None:
+        return JsonResponse(data=json_format(ErrorMessage.SNACK_404, error=True))
+    if request.method == RequestMethod.GET:
+        log_instance: BaseManager[StockLog] = (
+            StockLog.objects.filter(snack=snack_instance)
+            .select_related("snack", "machine")
+            .all()
+        )
+        return JsonResponse(
+            data=json_format(
+                [stock_log_serializer(i) for i in log_instance], error=False
+            )
+        )
+    return HttpResponseNotAllowed([RequestMethod.GET])
+
+
+def machine_log_view(request: HttpRequest, id: int) -> HttpResponse:
+    """Show all log with machine id."""
+    machine_instance: Machine | None = Machine.objects.filter(id=id).first()
+    if machine_instance is None:
+        return JsonResponse(data=json_format(ErrorMessage.SNACK_404, error=True))
+    if request.method == RequestMethod.GET:
+        log_instance: BaseManager[StockLog] = (
+            StockLog.objects.filter(machine=machine_instance)
+            .select_related("snack", "machine")
+            .all()
+        )
+        return JsonResponse(
+            data=json_format(
+                [stock_log_serializer(i) for i in log_instance], error=False
             )
         )
     return HttpResponseNotAllowed([RequestMethod.GET])

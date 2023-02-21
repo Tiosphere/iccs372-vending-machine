@@ -1,7 +1,7 @@
 from django.db.models.manager import BaseManager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from myapp.models import Machine, Stock
+from myapp.models import Machine, Stock, StockLog
 
 
 @receiver(post_save, sender=Stock)
@@ -22,3 +22,11 @@ def machine_status_update(sender: BaseManager[Stock], instance: Stock, **kwargs)
         Machine.objects.filter(id=instance.machine.id).update(
             status=Machine.MachineStatus.REFILL
         )
+
+
+@receiver(post_save, sender=Stock)
+def stock_log(sender: BaseManager[Stock], instance: Stock, **kwargs):
+    """Create new log every time stock get updated."""
+    StockLog.objects.create(
+        machine=instance.machine, snack=instance.snack, quantity=instance.quantity
+    )

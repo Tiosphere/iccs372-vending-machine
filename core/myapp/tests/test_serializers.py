@@ -1,11 +1,12 @@
 from typing import Any
 
 from django.test import TestCase
-from myapp.models import Machine, Snack, Stock
+from myapp.models import Machine, Snack, Stock, StockLog
 from myapp.serializers import (
     machine_detail_serializer,
     machine_serializer,
     snack_serializer,
+    stock_log_serializer,
     stock_serializer,
 )
 
@@ -32,7 +33,9 @@ class TestMachineSerializer(TestCase):
         self.assertEqual(serialize_instance.get("id"), self.instance.id)
         self.assertEqual(serialize_instance.get("name"), self.name)
         self.assertEqual(serialize_instance.get("location"), self.location)
-        self.assertEqual(serialize_instance.get("status"), Machine.MachineStatus.OFFLINE)
+        self.assertEqual(
+            serialize_instance.get("status"), Machine.MachineStatus.OFFLINE
+        )
         self.assertEqual(serialize_instance.get("stock"), None)
 
 
@@ -71,3 +74,28 @@ class TestMachineDetailAndStockSerializer(TestCase):
             serialize_instance.get("stock")[0],
             stock_serializer(self.machine_instance.stock.first()),
         )
+
+
+class TestLogSerializer(TestCase):
+    def setUp(self):
+        self.machine_name = "new machine"
+        self.machine_location = "new machine location"
+        self.machine_instance = Machine.objects.create(
+            name=self.machine_name, location=self.machine_location
+        )
+        self.snack_name = "new snack"
+        self.snack_instance = Snack.objects.create(name=self.snack_name)
+        self.snack_quantity = 20
+        Stock.objects.create(
+            machine=self.machine_instance,
+            snack=self.snack_instance,
+            quantity=self.snack_quantity,
+        )
+
+    def test_serializer(self):
+        log_instance: StockLog = StockLog.objects.first()
+        serialize_instance: dict[str, Any] = stock_log_serializer(log_instance)
+        self.assertEqual(serialize_instance.get("snack_id"), log_instance.snack.id)
+        self.assertEqual(serialize_instance.get("machine_id"), log_instance.machine.id)
+        self.assertEqual(serialize_instance.get("quantity"), log_instance.quantity)
+        self.assertEqual(serialize_instance.get("created"), str(log_instance.created))

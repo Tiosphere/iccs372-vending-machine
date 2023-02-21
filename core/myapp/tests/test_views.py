@@ -5,12 +5,8 @@ from django.core import management
 from django.http import HttpResponse
 from django.test import Client, TestCase
 from django.urls import reverse
-from myapp.models import Machine, Snack, Stock
-from myapp.serializers import (
-    machine_detail_serializer,
-    machine_serializer,
-    snack_serializer,
-)
+from myapp.models import Machine, Snack, Stock, StockLog
+from myapp.serializers import *
 
 
 class StatusCode(enumerate):
@@ -49,7 +45,8 @@ class TestMachineView(TestCase):
         for item in result:
             instance = Machine.objects.get(id=item.get("id"))
             self.assertEqual(
-                len(item.get("stock", [])), Stock.objects.filter(machine=instance).count()
+                len(item.get("stock", [])),
+                Stock.objects.filter(machine=instance).count(),
             )
 
         # Test detail=false
@@ -364,3 +361,77 @@ class TestStockInstance(TestCase):
             .stock.filter(snack=Snack.objects.get(id=self.snack_id))
             .count(),
         )
+
+
+class TestMachineLog(TestCase):
+    def setUpTestData():
+        management.call_command("create_sample")
+
+    def setUp(self):
+        self.client: Client = Client()
+        self.name: str = "myapp:machine_log"
+        self.machine_id: int = 1
+        self.url: str = reverse(self.name, args=[self.machine_id])
+        self.stock_query = StockLog.objects.filter(machine=Machine.objects.get(id=1))
+
+    def test_get_simple(self):
+        response: HttpResponse = self.client.get(self.url)
+        content: dict[str, Any] = json.loads(response.content)
+        result: dict[str, Any] = content.get("result")
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(result, [stock_log_serializer(i) for i in self.stock_query])
+
+    def test_get_error_id(self):
+        response: HttpResponse = self.client.get(reverse(self.name, args=[100]))
+        content: dict[str, Any] = json.loads(response.content)
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(content.get("error"), True)
+
+    def test_post_simple(self):
+        response: HttpResponse = self.client.post(self.url)
+        self.assertEqual(response.status_code, StatusCode.NOT_ALLOW)
+
+    def test_delete_simple(self):
+        response: HttpResponse = self.client.delete(self.url)
+        self.assertEqual(response.status_code, StatusCode.NOT_ALLOW)
+
+    def test_put_simple(self):
+        response: HttpResponse = self.client.put(self.url)
+        self.assertEqual(response.status_code, StatusCode.NOT_ALLOW)
+
+
+class TestSnackLog(TestCase):
+    def setUpTestData():
+        management.call_command("create_sample")
+
+    def setUp(self):
+        self.client: Client = Client()
+        self.name: str = "myapp:snack_log"
+        self.snack_id: int = 1
+        self.url: str = reverse(self.name, args=[self.snack_id])
+        self.stock_query = StockLog.objects.filter(snack=Snack.objects.get(id=1))
+
+    def test_get_simple(self):
+        response: HttpResponse = self.client.get(self.url)
+        content: dict[str, Any] = json.loads(response.content)
+        result: dict[str, Any] = content.get("result")
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(result, [stock_log_serializer(i) for i in self.stock_query])
+
+    def test_get_error_id(self):
+        response: HttpResponse = self.client.get(reverse(self.name, args=[100]))
+        content: dict[str, Any] = json.loads(response.content)
+        self.assertEqual(response.status_code, StatusCode.NORMAL)
+        self.assertEqual(content.get("error"), True)
+
+    def test_post_simple(self):
+        response: HttpResponse = self.client.post(self.url)
+        self.assertEqual(response.status_code, StatusCode.NOT_ALLOW)
+
+    def test_delete_simple(self):
+        response: HttpResponse = self.client.delete(self.url)
+        self.assertEqual(response.status_code, StatusCode.NOT_ALLOW)
+
+    def test_put_simple(self):
+        response: HttpResponse = self.client.put(self.url)
+        self.assertEqual(response.status_code, StatusCode.NOT_ALLOW)

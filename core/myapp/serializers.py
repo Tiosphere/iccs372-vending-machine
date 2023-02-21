@@ -1,6 +1,6 @@
 from typing import Any
 
-from myapp.models import Machine, Snack, Stock
+from myapp.models import Machine, Snack, Stock, StockLog
 
 
 def snack_serializer(instance: Snack) -> dict[str, Any]:
@@ -14,6 +14,16 @@ def stock_serializer(instance: Stock) -> dict[str, Any]:
         "snack_id": instance.snack.id,
         "snack_name": instance.snack.name,
         "quantity": instance.quantity,
+    }
+
+
+def stock_log_serializer(instance: StockLog) -> dict[str, Any]:
+    """Create json format of stock log."""
+    return {
+        "snack_id": instance.snack.id,
+        "machine_id": instance.machine.id,
+        "quantity": instance.quantity,
+        "created": str(instance.created),
     }
 
 

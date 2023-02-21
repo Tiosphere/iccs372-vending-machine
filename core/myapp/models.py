@@ -69,3 +69,21 @@ class Stock(models.Model):
             "id",  # Order by id
         ]
         default_related_name = "stock"
+
+
+class StockLog(models.Model):
+    """Model for keeping track of change in stock."""
+
+    id: models.BigAutoField = models.BigAutoField(primary_key=True)
+    machine: models.ForeignKey = models.ForeignKey(to=Machine, on_delete=models.CASCADE)
+    snack: models.ForeignKey = models.ForeignKey(to=Snack, on_delete=models.CASCADE)
+    quantity: models.PositiveIntegerField = models.PositiveIntegerField(
+        default=0, editable=True
+    )
+    created: models.DateTimeField = models.DateTimeField(auto_now_add=True)
+
+    class Meta:  # noqa: ignore=D106
+        ordering = [
+            "-created",  # Order by created
+        ]
+        default_related_name = "stock_log"

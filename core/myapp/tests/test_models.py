@@ -1,5 +1,6 @@
 from django.test import TestCase
-from myapp.models import Machine, Snack, Stock
+from django.utils import timezone
+from myapp.models import Machine, Snack, Stock, StockLog
 
 
 class TestModel(TestCase):
@@ -35,3 +36,23 @@ class TestModel(TestCase):
         )
         self.machine.refresh_from_db()
         self.assertEqual(self.machine.status, Machine.MachineStatus.REFILL)
+
+    def test_stock_log(self):
+        self.assertEqual(StockLog.objects.all().count(), 0)
+        # create first stock
+        stock = Stock.objects.create(machine=self.machine, snack=self.snack)
+        stock_log = StockLog.objects.all().first()
+        self.assertEqual(StockLog.objects.all().count(), 1)
+        self.assertLessEqual(stock_log.created, timezone.now())
+        self.assertEqual(stock_log.machine, self.machine)
+        self.assertEqual(stock_log.snack, self.snack)
+        self.assertEqual(stock_log.quantity, 0)
+        # edit quantity
+        stock.quantity = 10
+        stock.save()
+        stock_log = StockLog.objects.all().first()
+        self.assertEqual(StockLog.objects.all().count(), 2)
+        self.assertLessEqual(stock_log.created, timezone.now())
+        self.assertEqual(stock_log.machine, self.machine)
+        self.assertEqual(stock_log.snack, self.snack)
+        self.assertEqual(stock_log.quantity, 10)
